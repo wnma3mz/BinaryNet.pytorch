@@ -38,3 +38,10 @@ To run resnet18 for cifar10 dataset use: python main_binary.py --model resnet_bi
         `vgg_cifar10.py`
 
         `alexnet.py`
+
+Note：
+
+1. 在`main_*.py`中`org.copy_`是为了将未二值化的权重复制出来，以便进行梯度求导
+
+2. `DataLoader`中`pin_memory`。True，设置为锁页内存，内存的Tensor转GPU的显存会更快。
+   当计算机的内存充足的时候，可以设置True。当系统卡住，或者交换内存使用过多的时候，设置pin_memory=False。pin_memory默认为False。

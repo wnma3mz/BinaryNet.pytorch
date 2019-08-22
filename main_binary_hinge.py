@@ -231,7 +231,8 @@ def main():
     optimizer = torch.optim.SGD(model.parameters(), lr=args.lr)
     logging.info('training regime: %s', regime)
     #import pdb; pdb.set_trace()
-    search_binarized_modules(model)
+    # 不明白为什么要加这个函数，并且项目中也未找到该函数
+    # search_binarized_modules(model)
 
     for epoch in range(args.start_epoch, args.epochs):
         optimizer = adjust_optimizer(optimizer, epoch, regime)

@@ -206,12 +206,7 @@ def main():
     model.type(args.type)
 
     val_data = get_dataset(args.dataset, 'val', transform['eval'])
-    """
-    pin_memory=True，设置为锁页内存，内存的Tensor转GPU的显存会更快
-    当计算机的内存充足的时候，可以设置pin_memory=True。
-    当系统卡住，或者交换内存使用过多的时候，设置pin_memory=False。
-    pin_memory默认为False。
-    """
+
     val_loader = torch.utils.data.DataLoader(val_data,
                                              batch_size=args.batch_size,
                                              shuffle=False,
