@@ -4,10 +4,15 @@ import math
 
 __all__ = ['resnet']
 
+
 def conv3x3(in_planes, out_planes, stride=1):
     "3x3 convolution with padding"
-    return nn.Conv2d(in_planes, out_planes, kernel_size=3, stride=stride,
-                     padding=1, bias=False)
+    return nn.Conv2d(in_planes,
+                     out_planes,
+                     kernel_size=3,
+                     stride=stride,
+                     padding=1,
+                     bias=False)
 
 
 def init_model(model):
@@ -59,8 +64,12 @@ class Bottleneck(nn.Module):
         super(Bottleneck, self).__init__()
         self.conv1 = nn.Conv2d(inplanes, planes, kernel_size=1, bias=False)
         self.bn1 = nn.BatchNorm2d(planes)
-        self.conv2 = nn.Conv2d(planes, planes, kernel_size=3, stride=stride,
-                               padding=1, bias=False)
+        self.conv2 = nn.Conv2d(planes,
+                               planes,
+                               kernel_size=3,
+                               stride=stride,
+                               padding=1,
+                               bias=False)
         self.bn2 = nn.BatchNorm2d(planes)
         self.conv3 = nn.Conv2d(planes, planes * 4, kernel_size=1, bias=False)
         self.bn3 = nn.BatchNorm2d(planes * 4)
@@ -92,7 +101,6 @@ class Bottleneck(nn.Module):
 
 
 class ResNet(nn.Module):
-
     def __init__(self):
         super(ResNet, self).__init__()
 
@@ -100,8 +108,11 @@ class ResNet(nn.Module):
         downsample = None
         if stride != 1 or self.inplanes != planes * block.expansion:
             downsample = nn.Sequential(
-                nn.Conv2d(self.inplanes, planes * block.expansion,
-                          kernel_size=1, stride=stride, bias=False),
+                nn.Conv2d(self.inplanes,
+                          planes * block.expansion,
+                          kernel_size=1,
+                          stride=stride,
+                          bias=False),
                 nn.BatchNorm2d(planes * block.expansion),
             )
 
@@ -132,12 +143,17 @@ class ResNet(nn.Module):
 
 
 class ResNet_imagenet(ResNet):
-
-    def __init__(self, num_classes=1000,
-                 block=Bottleneck, layers=[3, 4, 23, 3]):
+    def __init__(self,
+                 num_classes=1000,
+                 block=Bottleneck,
+                 layers=[3, 4, 23, 3]):
         super(ResNet_imagenet, self).__init__()
         self.inplanes = 64
-        self.conv1 = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3,
+        self.conv1 = nn.Conv2d(3,
+                               64,
+                               kernel_size=7,
+                               stride=2,
+                               padding=3,
                                bias=False)
         self.bn1 = nn.BatchNorm2d(64)
         self.relu = nn.ReLU(inplace=True)
@@ -151,22 +167,35 @@ class ResNet_imagenet(ResNet):
 
         init_model(self)
         self.regime = {
-            0: {'optimizer': 'SGD', 'lr': 1e-1,
-                'weight_decay': 1e-4, 'momentum': 0.9},
-            30: {'lr': 1e-2},
-            60: {'lr': 1e-3, 'weight_decay': 0},
-            90: {'lr': 1e-4}
+            0: {
+                'optimizer': 'SGD',
+                'lr': 1e-1,
+                'weight_decay': 1e-4,
+                'momentum': 0.9
+            },
+            30: {
+                'lr': 1e-2
+            },
+            60: {
+                'lr': 1e-3,
+                'weight_decay': 0
+            },
+            90: {
+                'lr': 1e-4
+            }
         }
 
 
 class ResNet_cifar10(ResNet):
-
-    def __init__(self, num_classes=10,
-                 block=BasicBlock, depth=18):
+    def __init__(self, num_classes=10, block=BasicBlock, depth=18):
         super(ResNet_cifar10, self).__init__()
         self.inplanes = 16
         n = int((depth - 2) / 6)
-        self.conv1 = nn.Conv2d(3, 16, kernel_size=3, stride=1, padding=1,
+        self.conv1 = nn.Conv2d(3,
+                               16,
+                               kernel_size=3,
+                               stride=1,
+                               padding=1,
                                bias=False)
         self.bn1 = nn.BatchNorm2d(16)
         self.relu = nn.ReLU(inplace=True)
@@ -180,38 +209,55 @@ class ResNet_cifar10(ResNet):
 
         init_model(self)
         self.regime = {
-            0: {'optimizer': 'SGD', 'lr': 1e-1,
-                'weight_decay': 1e-4, 'momentum': 0.9},
-            81: {'lr': 1e-2},
-            122: {'lr': 1e-3, 'weight_decay': 0},
-            164: {'lr': 1e-4}
+            0: {
+                'optimizer': 'SGD',
+                'lr': 1e-1,
+                'weight_decay': 1e-4,
+                'momentum': 0.9
+            },
+            81: {
+                'lr': 1e-2
+            },
+            122: {
+                'lr': 1e-3,
+                'weight_decay': 0
+            },
+            164: {
+                'lr': 1e-4
+            }
         }
 
 
 def resnet(**kwargs):
-    num_classes, depth, dataset = map(
-        kwargs.get, ['num_classes', 'depth', 'dataset'])
+    num_classes, depth, dataset = map(kwargs.get,
+                                      ['num_classes', 'depth', 'dataset'])
     if dataset == 'imagenet':
         num_classes = num_classes or 1000
         depth = depth or 50
         if depth == 18:
             return ResNet_imagenet(num_classes=num_classes,
-                                   block=BasicBlock, layers=[2, 2, 2, 2])
+                                   block=BasicBlock,
+                                   layers=[2, 2, 2, 2])
         if depth == 34:
             return ResNet_imagenet(num_classes=num_classes,
-                                   block=BasicBlock, layers=[3, 4, 6, 3])
+                                   block=BasicBlock,
+                                   layers=[3, 4, 6, 3])
         if depth == 50:
             return ResNet_imagenet(num_classes=num_classes,
-                                   block=Bottleneck, layers=[3, 4, 6, 3])
+                                   block=Bottleneck,
+                                   layers=[3, 4, 6, 3])
         if depth == 101:
             return ResNet_imagenet(num_classes=num_classes,
-                                   block=Bottleneck, layers=[3, 4, 23, 3])
+                                   block=Bottleneck,
+                                   layers=[3, 4, 23, 3])
         if depth == 152:
             return ResNet_imagenet(num_classes=num_classes,
-                                   block=Bottleneck, layers=[3, 8, 36, 3])
+                                   block=Bottleneck,
+                                   layers=[3, 8, 36, 3])
 
     elif dataset == 'cifar10':
         num_classes = num_classes or 10
-        depth = depth or 18 #56
+        depth = depth or 18  #56
         return ResNet_cifar10(num_classes=num_classes,
-                              block=BasicBlock, depth=depth)
+                              block=BasicBlock,
+                              depth=depth)

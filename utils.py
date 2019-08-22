@@ -29,7 +29,6 @@ def setup_logging(log_file='log.txt'):
 
 
 class ResultsLog(object):
-
     def __init__(self, path='results.csv', plot_path=None):
         self.path = path
         self.plot_path = plot_path or (self.path + '.html')
@@ -73,14 +72,19 @@ class ResultsLog(object):
         self.figures.append(fig)
 
 
-def save_checkpoint(state, is_best, path='.', filename='checkpoint.pth.tar', save_all=False):
+def save_checkpoint(state,
+                    is_best,
+                    path='.',
+                    filename='checkpoint.pth.tar',
+                    save_all=False):
     filename = os.path.join(path, filename)
     torch.save(state, filename)
     if is_best:
         shutil.copyfile(filename, os.path.join(path, 'model_best.pth.tar'))
     if save_all:
-        shutil.copyfile(filename, os.path.join(
-            path, 'checkpoint_epoch_%s.pth.tar' % state['epoch']))
+        shutil.copyfile(
+            filename,
+            os.path.join(path, 'checkpoint_epoch_%s.pth.tar' % state['epoch']))
 
 
 class AverageMeter(object):
@@ -101,6 +105,7 @@ class AverageMeter(object):
         self.count += n
         self.avg = self.sum / self.count
 
+
 __optimizers = {
     'SGD': torch.optim.SGD,
     'ASGD': torch.optim.ASGD,
@@ -115,6 +120,7 @@ __optimizers = {
 
 def adjust_optimizer(optimizer, epoch, config):
     """Reconfigures the optimizer according to epoch and config dict"""
+
     def modify_optimizer(optimizer, setting):
         if 'optimizer' in setting:
             optimizer = __optimizers[setting['optimizer']](
@@ -139,7 +145,7 @@ def adjust_optimizer(optimizer, epoch, config):
     return optimizer
 
 
-def accuracy(output, target, topk=(1,)):
+def accuracy(output, target, topk=(1, )):
     """Computes the precision@k for the specified values of k"""
     maxk = max(topk)
     batch_size = target.size(0)
