@@ -299,6 +299,8 @@ def forward(data_loader,
     top1 = AverageMeter()
     top5 = AverageMeter()
 
+    model.eval()
+
     end = time.time()
     for i, (inputs, target) in enumerate(data_loader):
         # measure data loading time
@@ -307,19 +309,19 @@ def forward(data_loader,
             target = target.cuda(async=True)
         input_var = Variable(inputs.type(args.type), volatile=not training)
         target_var = Variable(target)
-
+    
         # compute output
         output = model(input_var)
         loss = criterion(output, target_var)
         if type(output) is list:
             output = output[0]
-
+    
         # measure accuracy and record loss
-        prec1, prec5 = accuracy(output.data, target, topk=(1, 5))
-        losses.update(loss.data[0], inputs.size(0))
+        prec1, prec5 = accuracy(output, target, topk=(1, 5))
+        losses.update(loss.item(), inputs.size(0))
         top1.update(prec1[0], inputs.size(0))
         top5.update(prec5[0], inputs.size(0))
-
+    
         if training:
             # compute gradient and do SGD step
             optimizer.zero_grad()
@@ -331,11 +333,11 @@ def forward(data_loader,
             for p in list(model.parameters()):
                 if hasattr(p, 'org'):
                     p.org.copy_(p.data.clamp_(-1, 1))
-
+    
         # measure elapsed time
         batch_time.update(time.time() - end)
         end = time.time()
-
+    
         if i % args.print_freq == 0:
             logging.info('{phase} - Epoch: [{0}][{1}/{2}]\t'
                          'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
@@ -352,7 +354,7 @@ def forward(data_loader,
                              loss=losses,
                              top1=top1,
                              top5=top5))
-
+    
     return losses.avg, top1.avg, top5.avg
 
 

@@ -306,7 +306,7 @@ class ResNet_cifar100(ResNet):
         self.layer4 = lambda x: x
         self.avgpool = nn.AvgPool2d(8)
         self.bn2 = nn.BatchNorm1d(64 * self.inflate)
-        self.bn3 = nn.BatchNorm1d(10)
+        self.bn3 = nn.BatchNorm1d(100)
         self.logsoftmax = nn.LogSoftmax()
         self.fc = BinarizeLinear(64 * self.inflate, num_classes)
 
@@ -320,7 +320,7 @@ class ResNet_cifar100(ResNet):
         #}
         self.regime = {
             0: {
-                'optimizer': 'Adam',
+                'optimizer': 'SGD',
                 'lr': 5e-3
             },
             101: {
@@ -375,6 +375,6 @@ def resnet_binary(**kwargs):
     elif dataset == 'cifar100':
         num_classes = 100
         depth = depth or 18
-        return ResNet_cifar100(num_classes=num_classes=,
+        return ResNet_cifar100(num_classes=num_classes,
                                block=BasicBlock,
                                depth=depth)
