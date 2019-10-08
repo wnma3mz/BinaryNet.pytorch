@@ -37,7 +37,6 @@ def evlation(net, testloader):
             correct += (predicted == labels).sum().item()  # 预测正确数
 
     acc = 100 * correct / total
-    print('Acc: {}'.format(acc))
     # time_end = time.time()
     # print('Time cost:', time_end - time_start, "s")
     return acc
@@ -86,7 +85,7 @@ if __name__ == '__main__':
     input_size = None
     # imagenet
     dataset = 'cifar100'
-    results_dir = ' ./results'
+    results_dir = './results'
     save = 'resnet18_binary'
 
     # alexnet
@@ -95,7 +94,7 @@ if __name__ == '__main__':
     print_freq = 10
     
     TYPE = 'torch.cuda.FloatTensor'
-    gpus = '3'
+    gpus = '2'
     workers = 8
     epochs = 2500
     start_epoch = 0
@@ -117,9 +116,9 @@ if __name__ == '__main__':
         model_config = dict(model_config, **literal_eval(MODEL_CONFIG))
 
     model = model(**model_config)
-
+    model.cuda()
     criterion = getattr(model, 'criterion', nn.CrossEntropyLoss)()
-    criterion.type(TYPE)
+    # criterion.type(TYPE)
 
     optimizer = torch.optim.SGD(model.parameters(), lr=lr)
 
@@ -180,11 +179,12 @@ if __name__ == '__main__':
                 if hasattr(p, 'org'):
                     p.org.copy_(p.data.clamp_(-1, 1))
 
-        if epoch % print_freq == 0:
-            s1 = time.time()
-            print('epoch: %d loss: %.4f time: %.4f' %
-                  (epoch + 1, loss.item(), time.time() - s1))
         torch.save(model.state_dict(), os.path.join(save_dir, 'new.pth'))
 
         if evlation(model, test_loader) > acc:
             torch.save(model.state_dict(), os.path.join(save_dir, 'best.pth'))
+        if epoch % print_freq == 0:
+            s1 = time.time()
+            print('epoch: %d loss: %.4f time: %.4f' %
+                  (epoch + 1, loss.item(), time.time() - s1))
+            print('Acc: {}'.format(acc))
