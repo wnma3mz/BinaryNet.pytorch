@@ -23,6 +23,10 @@ import torch.nn.functional as F
 def evlation(net, testloader):
     # 评估
     net.eval()
+    
+    # top1 = AverageMeter()
+    # top5 = AverageMeter()
+    # """
     # time_start = time.time()
     correct = 0
     total = 0
@@ -37,6 +41,27 @@ def evlation(net, testloader):
             correct += (predicted == labels).sum().item()  # 预测正确数
 
     acc = 100 * correct / total
+    # """
+    """
+    for i, (inputs, target) in enumerate(data_loader):
+        
+        input_var = Variable(inputs.type(args.type), volatile=not training)
+        target_var = Variable(target)
+    
+        # compute output
+        output = model(input_var)
+        loss = criterion(output, target_var)
+        if type(output) is list:
+            output = output[0]
+    
+        # measure accuracy and record loss
+        prec1, prec5 = accuracy(output, target, topk=(1, 5))
+        # losses.update(loss.item(), inputs.size(0)) 
+        top1.update(prec1[0], inputs.size(0))
+        top5.update(prec5[0], inputs.size(0))
+        # top1.avg
+    """
+
     # time_end = time.time()
     # print('Time cost:', time_end - time_start, "s")
     return acc
@@ -155,6 +180,7 @@ if __name__ == '__main__':
     model.train()
     acc = 0.
     for epoch in range(start_epoch, epochs):
+        s1 = time.time()
         optimizer = adjust_optimizer(optimizer, epoch, regime)
 
         for i, (inputs, target) in enumerate(train_loader):
@@ -181,10 +207,11 @@ if __name__ == '__main__':
 
         torch.save(model.state_dict(), os.path.join(save_dir, 'new.pth'))
 
-        if evlation(model, test_loader) > acc:
+        now_acc = evlation(model, test_loader)
+        if  now_acc > acc:
+            acc = now_acc
             torch.save(model.state_dict(), os.path.join(save_dir, 'best.pth'))
         if epoch % print_freq == 0:
-            s1 = time.time()
             print('epoch: %d loss: %.4f time: %.4f' %
                   (epoch + 1, loss.item(), time.time() - s1))
             print('Acc: {}'.format(acc))
