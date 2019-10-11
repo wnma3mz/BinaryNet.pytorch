@@ -320,23 +320,22 @@ class ResNet_cifar100(ResNet):
         #}
         self.regime = {
             0: {
-                'optimizer': 'SGD',
-                'lr': 1e-1,
-                'weight_decay': 1e-4,
-                'momentum': 0.9
+                'optimizer': 'Adam',
+                'lr': 5e-2
             },
-            30: {
+            101: {
                 'lr': 1e-2
             },
-            60: {
-                'lr': 1e-3,
-                'weight_decay': 0
+            142: {
+                'lr': 5e-3
             },
-            90: {
+            184: {
+                'lr': 1e-3
+            },
+            220: {
                 'lr': 1e-4
             }
         }
-
 
 def resnet_binary(**kwargs):
     num_classes, depth, dataset = map(kwargs.get,
