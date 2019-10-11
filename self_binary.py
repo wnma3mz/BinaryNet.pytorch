@@ -68,10 +68,11 @@ def evlation(net, testloader):
 
 
 def train_KD(t_net, model):
+    t_net.eval()
     model.train()
     temperature = 1
     optimizer = torch.optim.SGD(model.parameters(), lr=lr)
-
+    acc = 0.
     for epoch in range(epochs):
         optimizer = adjust_optimizer(optimizer, epoch, regime)
 
@@ -102,7 +103,17 @@ def train_KD(t_net, model):
                 if hasattr(p, 'org'):
                     p.org.copy_(p.data.clamp_(-1, 1))
 
-        evlation(model, test_loader)
+
+        torch.save(model.state_dict(), os.path.join(save_dir, 'new.pth'))
+
+        now_acc = evlation(model, test_loader)
+        if  now_acc > acc:
+            acc = now_acc
+            torch.save(model.state_dict(), os.path.join(save_dir, 'best.pth'))
+        if epoch % print_freq == 0:
+            print('epoch: %d loss: %.4f time: %.4f' %
+                  (epoch + 1, loss.item(), time.time() - s1))
+            print('Acc: {}'.format(acc))
 
 
 if __name__ == '__main__':
