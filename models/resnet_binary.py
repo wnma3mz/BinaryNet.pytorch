@@ -321,19 +321,19 @@ class ResNet_cifar100(ResNet):
         self.regime = {
             0: {
                 'optimizer': 'SGD',
-                'lr': 5e-3
+                'lr': 1e-1,
+                'weight_decay': 1e-4,
+                'momentum': 0.9
             },
-            101: {
-                'lr': 1e-3
+            30: {
+                'lr': 1e-2
             },
-            142: {
-                'lr': 5e-4
+            60: {
+                'lr': 1e-3,
+                'weight_decay': 0
             },
-            184: {
+            90: {
                 'lr': 1e-4
-            },
-            220: {
-                'lr': 1e-5
             }
         }
 
