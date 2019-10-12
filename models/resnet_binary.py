@@ -163,12 +163,18 @@ class ResNet(nn.Module):
         x = self.maxpool(x)
         x = self.bn1(x)
         x = self.tanh1(x)
+        # print("conv:", x.shape)
         x = self.layer1(x)
+        # print("layer1:", x.shape)
         x = self.layer2(x)
+        # print("layer2:", x.shape)
         x = self.layer3(x)
+        # print("layer3:", x.shape)
         x = self.layer4(x)
+        # print("layer4:", x.shape)
 
         x = self.avgpool(x)
+        # print("avg:", x.shape)
         x = x.view(x.size(0), -1)
         x = self.bn2(x)
         x = self.tanh2(x)
@@ -186,6 +192,12 @@ class ResNet_imagenet(ResNet):
                  layers=[3, 4, 23, 3]):
         super(ResNet_imagenet, self).__init__()
         self.inplanes = 64
+        # self.conv1 = BinarizeConv2d(3,
+        #                             64,
+        #                             kernel_size=3,
+        #                             stride=1,
+        #                             padding=1,
+        #                             bias=False)
         self.conv1 = BinarizeConv2d(3,
                                     64,
                                     kernel_size=7,
@@ -193,13 +205,19 @@ class ResNet_imagenet(ResNet):
                                     padding=3,
                                     bias=False)
         self.bn1 = nn.BatchNorm2d(64)
-        self.tanh = nn.Hardtanh(inplace=True)
-        self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
+        self.tanh1 = nn.Hardtanh(inplace=True)
+        self.tanh2 = nn.Hardtanh(inplace=True)
+        self.maxpool = lambda x: x
+        # self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
         self.layer1 = self._make_layer(block, 64, layers[0])
         self.layer2 = self._make_layer(block, 128, layers[1], stride=2)
         self.layer3 = self._make_layer(block, 256, layers[2], stride=2)
         self.layer4 = self._make_layer(block, 512, layers[3], stride=2)
-        self.avgpool = nn.AvgPool2d(7)
+        # self.avgpool = nn.AvgPool2d(7) # ImageNet
+        self.avgpool = nn.AvgPool2d(2) # Cifar100
+        self.logsoftmax = nn.LogSoftmax()
+        self.bn2 = nn.BatchNorm1d(512)
+        self.bn3 = nn.BatchNorm1d(num_classes)
         self.fc = BinarizeLinear(512 * block.expansion, num_classes)
 
         init_model(self)
@@ -210,14 +228,14 @@ class ResNet_imagenet(ResNet):
                 'weight_decay': 1e-4,
                 'momentum': 0.9
             },
-            30: {
+            30*2: {
                 'lr': 1e-2
             },
-            60: {
+            60*2: {
                 'lr': 1e-3,
                 'weight_decay': 0
             },
-            90: {
+            90*2: {
                 'lr': 1e-4
             }
         }
@@ -301,14 +319,20 @@ class ResNet_cifar100(ResNet):
         self.layer3 = self._make_layer(block,
                                        64 * self.inflate,
                                        n,
+                                       stride=2,)
+                                       # do_bntan=False)
+
+        self.layer4 = self._make_layer(block,
+                                       128 * self.inflate,
+                                       n,
                                        stride=2,
                                        do_bntan=False)
-        self.layer4 = lambda x: x
-        self.avgpool = nn.AvgPool2d(8)
-        self.bn2 = nn.BatchNorm1d(64 * self.inflate)
-        self.bn3 = nn.BatchNorm1d(100)
+        # self.layer4 = lambda x: x
+        self.avgpool = nn.AvgPool2d(4)
+        self.bn2 = nn.BatchNorm1d(64 * self.inflate * 2)
+        self.bn3 = nn.BatchNorm1d(num_classes)
         self.logsoftmax = nn.LogSoftmax()
-        self.fc = BinarizeLinear(64 * self.inflate, num_classes)
+        self.fc = BinarizeLinear(64 * self.inflate *2 , num_classes)
 
         init_model(self)
         #self.regime = {
@@ -321,20 +345,20 @@ class ResNet_cifar100(ResNet):
         self.regime = {
             0: {
                 'optimizer': 'Adam',
-                'lr': 5e-2
-            },
-            101: {
-                'lr': 1e-2
-            },
-            142: {
                 'lr': 5e-3
             },
-            184: {
+            101: {
                 'lr': 1e-3
             },
-            220: {
+            142: {
+                'lr': 5e-4
+            },
+            184: {
                 'lr': 1e-4
-            }
+            },
+        #    320: {
+        #        'lr': 1e-5
+        #    }
         }
 
 def resnet_binary(**kwargs):
@@ -374,6 +398,10 @@ def resnet_binary(**kwargs):
     elif dataset == 'cifar100':
         num_classes = 100
         depth = depth or 18
-        return ResNet_cifar100(num_classes=num_classes,
-                               block=BasicBlock,
-                               depth=depth)
+        if depth == 34:
+            return ResNet_imagenet(num_classes=num_classes,
+                                   block=BasicBlock,
+                                   layers=[3, 4, 6, 3])
+        # return ResNet_cifar100(num_classes=num_classes,
+        #                        block=BasicBlock,
+        #                        depth=depth)
